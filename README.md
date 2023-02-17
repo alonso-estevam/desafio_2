@@ -33,11 +33,22 @@ SELECT categoria, ROUND(AVG(valor_unitario),2) FROM tb_produtos GROUP BY categor
 ### Resolução
 Depois de exercitar a sintaxe das funções de agregação com exemplos simples, vamos para a resolução das perguntas propostas:
 1. Qual a quantidade de produtos de cada categoria?
+
 A função que **conta** as coisas é o `COUNT`, e a função que **agrupa** é o `GROUP BY`. Assim, o comando sql fica:
 ```
 SELECT categoria, COUNT(nome) FROM tb_produtos GROUP BY categoria;
 ```
 2. Qual categoria dá mais lucro, considerando a soma do preço de seus produtos?
-Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e depois selecionar o **valor máximo** dentre os resultados - função `MAX`.
 
-
+Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e selecionar o **valor máximo** dentre os resultados - função `MAX`. Mas o comando não é tão simples como parece à primeira vista, pois envolve um série de subconsultas. 
+```
+SELECT tb_categorias.nome, SUM (tb_produtos.valor_unitario) AS soma_dos_precos
+FROM tb_produtos
+INNER JOIN tb_categorias ON tb_produtos.categoria = tb_categorias.id
+GROUP BY tb_categorias.nome
+HAVING SUM(tb_produtos.valor_unitario) = 
+    (SELECT MAX(soma_dos_precos) 
+    FROM (SELECT SUM(valor_unitario) as soma_dos_precos
+		    FROM tb_produtos GROUP BY categoria)
+	  as somas);
+```
