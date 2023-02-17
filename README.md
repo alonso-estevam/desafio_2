@@ -7,6 +7,7 @@ Tendo como base um banco de dados com uma tabela de produtos e outra de categori
 
 ### Conceitos praticados
 * funções de agregação (COUNT, MAX, MIN, SUM, AVG)
+* funções de ordenação (ORDER BY, GROUP BY)
 
 ### Preparação do ambiente
 Para realizar essa atividade, usei os mesmos scripts de criação de banco de dados, tabelas e relacionamentos entre tabelas deste <a href="https://github.com/alonso-estevam/desafio_1">exercício</a>. Modifiquei apenas os inserts, substituindo por produtos e categorias relacionadas ao tema de loja de bicicletas.
@@ -40,15 +41,19 @@ SELECT categoria, COUNT(nome) FROM tb_produtos GROUP BY categoria;
 ```
 2. Qual categoria dá mais lucro, considerando a soma do preço de seus produtos?
 
-Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e selecionar o **valor máximo** dentre os resultados - função `MAX`. Mas o comando não é tão simples como parece à primeira vista, pois envolve um série de subconsultas. 
+Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e selecionar o **valor máximo** dentre os resultados - função `MAX`. Mas o comando não é tão simples como parece à primeira vista, pois envolve um série de subconsultas. Depois de muito pensar sem conseguir uma resposta, recorri a um grupo dos colegas da faculdade, e um dos colegas veio com essa solução:
 ```
 SELECT tb_categorias.nome, SUM (tb_produtos.valor_unitario) AS soma_dos_precos
 FROM tb_produtos
 INNER JOIN tb_categorias ON tb_produtos.categoria = tb_categorias.id
 GROUP BY tb_categorias.nome
-HAVING SUM(tb_produtos.valor_unitario) = 
-    (SELECT MAX(soma_dos_precos) 
-    FROM (SELECT SUM(valor_unitario) as soma_dos_precos
-		    FROM tb_produtos GROUP BY categoria)
-	  as somas);
+HAVING SUM(tb_produtos.valor_unitario) = (
+    SELECT MAX(soma_dos_precos) 
+    FROM (
+    	SELECT SUM(valor_unitario) as soma_dos_precos
+	FROM tb_produtos GROUP BY categoria
+	)
+	as somas
+);
 ```
+De acordo com o colega, a cláusula `INNER JOIN` foi usada para combinar as duas tabelas (produtos e categorias) com base no campo categoria. A função `SUM`, como mencionado, soma o valor de todos os produtos em cada categoria, agrupando os resultados pela coluna `tb_categorias.nome`, da tabela `tb_categorias`. A cláusula `HAVING` serviu para filtrar os resultados e mostrar apenas as categorias que têm a maior soma de preços, utilizando a subconsulta `(SELECT MAX(soma_preços) FROM (SELECT SUM(preço) as soma_preços FROM produtos GROUP BY categoria) as somas)` para obter o valor máximo da soma de preços em todas as categorias. Por fim, a cláusula HAVING então comparou a soma de preços de cada categoria com o valor máximo obtido na subconsulta.
