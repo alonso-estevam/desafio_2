@@ -41,7 +41,7 @@ SELECT categoria, COUNT(nome) FROM tb_produtos GROUP BY categoria;
 ```
 2. Qual categoria dá mais lucro, considerando a soma do preço de seus produtos?
 
-Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e selecionar o **valor máximo** dentre os resultados - função `MAX`. Mas o comando não é tão simples como parece à primeira vista, pois envolve um série de subconsultas. Depois de muito pensar sem conseguir uma resposta, recorri a um grupo dos colegas da faculdade, e um dos colegas veio com essa solução:
+Para responder a essa pergunta, precisamos **somar** os preços dos produtos de cada categoria - função `SUM` - e selecionar o **valor máximo** dentre os resultados - função `MAX`. Mas o comando não é tão simples como parece à primeira vista, pois envolve um série de subconsultas. Depois de muito pensar sem conseguir uma resposta, recorri a um grupo dos colegas da faculdade, e o colega <a href="https://github.com/geremiasslima">Geremias Lima</a> veio com essa solução:
 ```
 SELECT tb_categorias.nome, SUM (tb_produtos.valor_unitario) AS soma_dos_precos
 FROM tb_produtos
@@ -57,3 +57,9 @@ HAVING SUM(tb_produtos.valor_unitario) = (
 );
 ```
 De acordo com o colega, a cláusula `INNER JOIN` foi usada para combinar as duas tabelas (produtos e categorias) com base no campo categoria. A função `SUM`, como mencionado, soma o valor de todos os produtos em cada categoria, agrupando os resultados pela coluna `tb_categorias.nome`, da tabela `tb_categorias`. A cláusula `HAVING` serviu para filtrar os resultados e mostrar apenas as categorias que têm a maior soma de preços, utilizando a subconsulta `(SELECT MAX(soma_preços) FROM (SELECT SUM(preço) as soma_preços FROM produtos GROUP BY categoria) as somas)` para obter o valor máximo da soma de preços em todas as categorias. Por fim, a cláusula HAVING então comparou a soma de preços de cada categoria com o valor máximo obtido na subconsulta.
+
+### Referências
+<a href="https://youtube.com/playlist?list=PLucm8g_ezqNoAkYKXN_zWupyH6hQCAwxY">Playlist sobre PostgreSQL do canal Bóson Treinamentos</a>
+
+### Créditos da resolução da pergunta 2
+<a href="https://github.com/geremiasslima">Geremias Lima</a>
